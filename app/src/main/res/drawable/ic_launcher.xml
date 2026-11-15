@@ -8,8 +8,8 @@
         android:pathData="M20,20 Q20,15 25,15 L83,15 Q88,15 88,20 L88,80 Q88,93 54,93 Q20,93 20,80 Z"
         android:fillAlpha="0.3"/>
     <!-- Eyes -->
-    <ellipse android:fillColor="#FFFFFF" android:cx="40" android:cy="52" android:rx="8" android:ry="10"/>
-    <ellipse android:fillColor="#FFFFFF" android:cx="68" android:cy="52" android:rx="8" android:ry="10"/>
-    <ellipse android:fillColor="#0A0C0F" android:cx="42" android:cy="54" android:rx="4" android:ry="5"/>
-    <ellipse android:fillColor="#0A0C0F" android:cx="70" android:cy="54" android:rx="4" android:ry="5"/>
+    <path android:fillColor="#FFFFFF" android:pathData="M32,52a8,10 0 1,0 16,0a8,10 0 1,0 -16,0z"/>
+    <path android:fillColor="#FFFFFF" android:pathData="M60,52a8,10 0 1,0 16,0a8,10 0 1,0 -16,0z"/>
+    <path android:fillColor="#0A0C0F" android:pathData="M38,54a4,5 0 1,0 8,0a4,5 0 1,0 -8,0z"/>
+    <path android:fillColor="#0A0C0F" android:pathData="M66,54a4,5 0 1,0 8,0a4,5 0 1,0 -8,0z"/>
 </vector>

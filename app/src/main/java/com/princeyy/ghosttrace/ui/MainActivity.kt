@@ -28,11 +28,13 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var adapter: AppListAdapter
     private var allRecords: List<AppRecord> = emptyList()
+    private var bgRecords: List<AppRecord> = emptyList()
 
     // Filter state
     private var filterUsed = false
     private var sortByFg = false
     private var gamesOnly = false
+    private var bgMode = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,15 +55,19 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupChipListeners() {
         binding.chipAll.setOnClickListener {
-            filterUsed = false; gamesOnly = false
+            filterUsed = false; gamesOnly = false; bgMode = false
             updateChipStates(); applyFilters()
         }
         binding.chipUsed.setOnClickListener {
-            filterUsed = true; gamesOnly = false
+            filterUsed = true; gamesOnly = false; bgMode = false
             updateChipStates(); applyFilters()
         }
         binding.chipGames.setOnClickListener {
-            gamesOnly = !gamesOnly; filterUsed = false
+            gamesOnly = !gamesOnly; filterUsed = false; bgMode = false
+            updateChipStates(); applyFilters()
+        }
+        binding.chipBg.setOnClickListener {
+            bgMode = !bgMode; filterUsed = false; gamesOnly = false
             updateChipStates(); applyFilters()
         }
         binding.chipSort.setOnClickListener {
@@ -72,7 +78,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateChipStates() {
-        binding.chipAll.isChecked = !filterUsed && !gamesOnly
+        binding.chipAll.isChecked = !filterUsed && !gamesOnly && !bgMode
+        binding.chipBg.isChecked = bgMode
         binding.chipUsed.isChecked = filterUsed
         binding.chipGames.isChecked = gamesOnly
     }
@@ -113,8 +120,10 @@ class MainActivity : AppCompatActivity() {
     private fun loadData() {
         binding.tvScanStatus.text = "Scanning..."
         Thread {
-            val records = UsageScanner.scan(this)
+            val result = UsageScanner.scanAll(this)
+            val records = result.ghosts
             allRecords = records
+            bgRecords = result.backgroundOnly
             runOnUiThread {
                 updateStats(records)
                 applyFilters()
@@ -132,21 +141,22 @@ class MainActivity : AppCompatActivity() {
         val oldestMs = records.minOfOrNull { it.firstSeen } ?: System.currentTimeMillis()
         val oldestDate = SimpleDateFormat("MMM dd", Locale.getDefault()).format(Date(oldestMs))
         binding.tvLogWindow.text = "7d / $oldestDate"
-        binding.tvScanStatus.text = "${records.size} ghosts found"
+        binding.tvScanStatus.text = "${records.size} ghosts, ${bgRecords.size} background-only"
     }
 
     private fun applyFilters() {
         val list = getFilteredList()
         adapter.submitList(list)
-        binding.tvListCount.text = "${list.size} ghost${if (list.size != 1) "s" else ""}"
+        val noun = if (bgMode) "background app" else "ghost"
+        binding.tvListCount.text = "${list.size} $noun${if (list.size != 1) "s" else ""}"
     }
 
     private fun getFilteredList(): List<AppRecord> {
-        var list = allRecords
+        var list = if (bgMode) bgRecords else allRecords
         if (filterUsed) list = list.filter { it.fgMillis > 0 }
         if (gamesOnly) list = list.filter { it.isGame }
-        list = if (sortByFg) list.sortedByDescending { it.fgMillis }
-               else list.sortedByDescending { it.lastSeen }
+        list = if (sortByFg) list.sortedByDescending { if (bgMode) it.svcMillis else it.fgMillis }
+               else list.sortedByDescending { if (bgMode) it.lastSvc else it.lastSeen }
         return list
     }
 

@@ -30,8 +30,11 @@ class AppListAdapter : ListAdapter<AppRecord, AppListAdapter.VH>(DIFF) {
         // Header
         b.tvPkgName.text = record.packageName
         b.tvAppLabel.text = record.appLabel
-        b.tvFgTime.text = FormatUtils.formatMs(record.fgMillis)
-        b.tvSessions.text = "${record.sessions} sessions"
+        val bgOnly = record.svcStarts > 0 && record.sessions == 0
+        b.tvFgTime.text = FormatUtils.formatMs(if (bgOnly) record.svcMillis else record.fgMillis)
+        b.tvSessions.text = if (bgOnly)
+            "${record.svcStarts} svc starts" + if (record.runningNow) " · running now" else ""
+        else "${record.sessions} sessions"
 
         // Badges
         b.badgeGame.visibility = if (record.isGame) View.VISIBLE else View.GONE
